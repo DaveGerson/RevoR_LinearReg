@@ -32,6 +32,8 @@ collegeLM_pred<-rxPredict(collegeData_LM,data = collegeData,computeResiduals=TRU
 plot(collegeLM_pred)
 residual_collegeLM_pred<-collegeLM_pred$graduation_rate_Resid
 collegeLM_pred_densprep<-collegeLM_pred$graduation_rate_Resid[!is.na(collegeLM_pred$graduation_rate_Resid)]
+				 
+
 collegeLM_densityFunction<-density(collegeLM_pred_densprep)
 plot(density(collegeLM_pred_densprep), type = "l", col = "blue", main = "Density Plot of Residuals", xlab = "residual", ylab = "probability density")
 #The model has a slight positive skew but for the most part is very normal
@@ -61,3 +63,16 @@ residual_collegeLM_pred<-collegeLM_pred$graduation_rate_Resid
 collegeLM_pred_densprep<-collegeLM_pred$graduation_rate_Resid[!is.na(collegeLM_pred$graduation_rate_Resid)]
 collegeLM_densityFunction<-density(collegeLM_pred_densprep)
 plot(density(collegeLM_pred_densprep), type = "l", col = "blue", main = "Density Plot of Residuals", xlab = "residual", ylab = "probability density")
+
+
+#Decision Forest Model
+collegeData$Public_Private_Flag<-collegeData$Public_Private_Flag-1
+collegeData_DecisionForest <- rxDTree( Public_Private_Flag ~ Average_Verbal_SAT + Average_Math_SAT + Average_ACT ,data = collegeData, transforms=transforms)	
+plot(createTreeView(collegeData_DecisionForest))
+DC_pred<-rxPredict(collegeData_DecisionForest,data = collegeData,computeResiduals=TRUE)
+#ROC PLOT
+actualVpred<-data.frame(DC_pred$Public_Private_Flag_Pred,collegeData$Public_Private_Flag)
+names(actualVpred)<-c("predicted","actual")
+graduation_roc <- rxRoc(actualVarName = "actual", predVarNames = c("predicted"), 
+                     data = actualVpred)
+plot(graduation_roc)	
